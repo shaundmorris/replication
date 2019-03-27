@@ -9,9 +9,9 @@ pipeline {
     }
     parameters {
             booleanParam(name: 'RELEASE', defaultValue: false, description: 'Perform Release?')
-            string(name: 'RELEASE_VERSION', defaultValue: null, description: 'The version to release. Empty value will release the current version')
-            string(name: 'RELEASE_TAG', defaultValue: null, description: 'The release tag for this version. Empty value will result in replication-RELEASE_VERSION')
-            string(name: 'NEXT_VERSION', defaultValue: null, description: 'The next development version. Empty value will increment the patch version')
+            string(name: 'RELEASE_VERSION', defaultValue: "", description: 'The version to release. Empty value will release the current version')
+            string(name: 'RELEASE_TAG', defaultValue: "", description: 'The release tag for this version. Empty value will result in replication-RELEASE_VERSION')
+            string(name: 'NEXT_VERSION', defaultValue: "", description: 'The next development version. Empty value will increment the patch version')
     }
     options {
         buildDiscarder(logRotator(numToKeepStr:'25'))
