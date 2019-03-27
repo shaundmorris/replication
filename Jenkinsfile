@@ -9,9 +9,9 @@ pipeline {
     }
     parameters {
             booleanParam(name: 'RELEASE', defaultValue: false, description: 'Perform Release?')
-            string(name: 'RELEASE_VERSION', defaultValue: "", description: 'The version to release. Empty value will release the current version')
-            string(name: 'RELEASE_TAG', defaultValue: "", description: 'The release tag for this version. Empty value will result in replication-RELEASE_VERSION')
-            string(name: 'NEXT_VERSION', defaultValue: "", description: 'The next development version. Empty value will increment the patch version')
+            string(name: 'RELEASE_VERSION', defaultValue: 'NA', description: 'The version to release. Empty value will release the current version')
+            string(name: 'RELEASE_TAG', defaultValue: 'NA', description: 'The release tag for this version. Empty value will result in replication-RELEASE_VERSION')
+            string(name: 'NEXT_VERSION', defaultValue: 'NA', description: 'The next development version. Empty value will increment the patch version')
     }
     options {
         buildDiscarder(logRotator(numToKeepStr:'25'))
@@ -30,7 +30,27 @@ pipeline {
                 script {
                     echo("new commit")
                     if(params.RELEASE == true) {
-                        echo("releaseing")
+                        if(params.RELEASE_VERSION != 'NA'){
+                            env.RELEASE_VERSION = params.RELEASE_VERSION
+                         } else {
+                            echo ("Setting release version to ${getBaseVersion()}")
+                            env.RELEASE_VERSION = getBaseVersion()
+                        }
+
+                        if(params.RELEASE_TAG != 'NA'){
+                            env.RELEASE_TAG = params.RELEASE_TAG
+                        } else {
+                            echo("Setting release tag")
+                            env.RELEASE_TAG = "replication-${env.RELEASE_VERSION}"
+                        }
+
+                        if(params.NEXT_VERSION != 'NA'){
+                            env.NEXT_VERSION = params.NEXT_VERSION
+                        } else {
+                            echo("Setting next version")
+                            env.NEXT_VERSION = getDevelopmentVersion()
+                        }
+                        echo("Release parameters: release-version: ${env.RELEASE_VERSION} release-tag: ${env.RELEASE_TAG} next-version: ${env.NEXT_VERSION}")
                     }
                 }
             }
