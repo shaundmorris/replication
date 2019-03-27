@@ -29,7 +29,9 @@ pipeline {
             steps {
                 script {
                     echo("new commit")
-
+                    if(params.RELEASE == true) {
+                        echo("releaseing")
+                    }
                 }
             }
         }
