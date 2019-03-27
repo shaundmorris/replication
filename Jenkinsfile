@@ -29,29 +29,7 @@ pipeline {
             steps {
                 script {
                     echo("new commit")
-                    if(params.RELEASE == true) {
-                        if(params.RELEASE_VERSION){
-                            env.RELEASE_VERSION = params.RELEASE_VERSION
-                         } else {
-                            echo ("Setting release version to ${getBaseVersion()}")
-                            env.RELEASE_VERSION = getBaseVersion()
-                        }
 
-                        if(params.RELEASE_TAG){
-                            env.RELEASE_TAG = params.RELEASE_TAG
-                        } else {
-                            echo("Setting release tag")
-                            env.RELEASE_TAG = "replication-${env.RELEASE_VERSION}"
-                        }
-
-                        if(params.NEXT_VERSION){
-                            env.NEXT_VERSION = params.NEXT_VERSION
-                        } else {
-                            echo("Setting next version")
-                            env.NEXT_VERSION = getDevelopmentVersion()
-                        }
-                        echo("Release parameters: release-version: ${env.RELEASE_VERSION} release-tag: ${env.RELEASE_TAG} next-version: ${env.NEXT_VERSION}")
-                    }
                 }
             }
         }
@@ -94,7 +72,7 @@ pipeline {
                         withMaven(maven: 'Maven 3.5.3', jdk: 'jdk8-latest', globalMavenSettingsConfig: 'default-global-settings', mavenSettingsConfig: 'codice-maven-settings', mavenOpts: '${LINUX_MVN_RANDOM}') {
                             script {
                                 if(params.RELEASE == true) {
-                                    sh "mvn -B -Dtag=${env.RELEASE_TAG} -DreleaseVersion=${env.RELEASE_VERSION} -DdevelopmentVersion=${env.NEXT_VERSION} release:prepare"
+                                    //sh "mvn -B -Dtag=${env.RELEASE_TAG} -DreleaseVersion=${env.RELEASE_VERSION} -DdevelopmentVersion=${env.NEXT_VERSION} release:prepare"
                                     env.RELEASE_COMMIT =  sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                                 } else {
                                     sh 'mvn clean install -B $DISABLE_DOWNLOAD_PROGRESS_OPTS'
