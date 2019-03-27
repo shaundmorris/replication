@@ -9,16 +9,22 @@ pipeline {
     }
     parameters {
             booleanParam(name: 'RELEASE', defaultValue: false, description: 'Perform Release?')
-            string(name: 'RELEASE_VERSION', defaultValue: 'NA', description: 'The version to release. Empty value will release the current version')
-            string(name: 'RELEASE_TAG', defaultValue: 'NA', description: 'The release tag for this version. Empty value will result in replication-RELEASE_VERSION')
-            string(name: 'NEXT_VERSION', defaultValue: 'NA', description: 'The next development version. Empty value will increment the patch version')
+            string(name: 'RELEASE_VERSION', defaultValue: 'NA', description: 'The version to release. An NA value will release the current version')
+            string(name: 'RELEASE_TAG', defaultValue: 'NA', description: 'The release tag for this version. An NA value will result in replication-RELEASE_VERSION')
+            string(name: 'NEXT_VERSION', defaultValue: 'NA', description: 'The next development version. An NA value will increment the patch version')
     }
     options {
         buildDiscarder(logRotator(numToKeepStr:'25'))
         disableConcurrentBuilds()
         timestamps()
     }
-
+    triggers {
+        /*
+          Restrict nightly builds to master branch, all others will be built on change only.
+          Note: The BRANCH_NAME will only work with a multi-branch job using the github-branch-source
+        */
+        cron(env.BRANCH_NAME == "master" ? "H H(21-23) * * *" : "")
+    }
     environment {
         LINUX_MVN_RANDOM = '-Djava.security.egd=file:/dev/./urandom'
         COVERAGE_EXCLUSIONS = '**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml'
@@ -28,7 +34,6 @@ pipeline {
         stage('Calculating build parameters'){
             steps {
                 script {
-                    echo("new commit")
                     if(params.RELEASE == true) {
                         if(params.RELEASE_VERSION != 'NA'){
                             env.RELEASE_VERSION = params.RELEASE_VERSION
