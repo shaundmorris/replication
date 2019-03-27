@@ -18,13 +18,7 @@ pipeline {
         disableConcurrentBuilds()
         timestamps()
     }
-    triggers {
-        /*
-          Restrict nightly builds to master branch, all others will be built on change only.
-          Note: The BRANCH_NAME will only work with a multi-branch job using the github-branch-source
-        */
-        cron(${env.BRANCH_NAME} == "master" ? "H H(21-23) * * *" : "")
-    }
+
     environment {
         LINUX_MVN_RANDOM = '-Djava.security.egd=file:/dev/./urandom'
         COVERAGE_EXCLUSIONS = '**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml'
