@@ -34,6 +34,7 @@ pipeline {
         stage('Calculating build parameters'){
             steps {
                 script {
+                    echo("new commit")
                     if(params.RELEASE == true) {
                         if(params.RELEASE_VERSION){
                             env.RELEASE_VERSION = params.RELEASE_VERSION
