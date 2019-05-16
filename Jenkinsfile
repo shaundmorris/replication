@@ -85,13 +85,7 @@ pipeline {
             parallel {
                 // Sonar stage only runs against master
                 stage ('SonarCloud') {
-                    when {
-                        allOf {
-                            expression { env.CHANGE_ID == null }
-                            branch 'master'
-                            environment name: 'JENKINS_ENV', value: 'prod'
-                        }
-                    }                 
+                        //Run SonarCloud on all branches as it will take care of removing analysis after 30 days
                         withMaven(maven: 'M35', jdk: 'jdk8-latest', globalMavenSettingsConfig: 'default-global-settings', mavenSettingsConfig: 'codice-maven-settings', mavenOpts: '${LINUX_MVN_RANDOM}') {
                             withCredentials([string(credentialsId: 'SonarQubeGithubToken', variable: 'SONARQUBE_GITHUB_TOKEN'), string(credentialsId: 'cxbot-sonarcloud', variable: 'SONAR_TOKEN')]) {
                                 script {
