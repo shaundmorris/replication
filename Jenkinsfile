@@ -8,13 +8,13 @@ pipeline {
         }
     }
     parameters {
-            booleanParam(name: 'RELEASE', defaultValue: false, description: 'Perform Release?')
-            string(name: 'RELEASE_VERSION', defaultValue: 'NA', description: 'The version to release. An NA value will release the current version')
-            string(name: 'RELEASE_TAG', defaultValue: 'NA', description: 'The release tag for this version. An NA value will result in replication-RELEASE_VERSION')
-            string(name: 'NEXT_VERSION', defaultValue: 'NA', description: 'The next development version. An NA value will increment the patch version')
+        booleanParam(name: 'RELEASE', defaultValue: false, description: 'Perform Release?')
+        string(name: 'RELEASE_VERSION', defaultValue: 'NA', description: 'The version to release. An NA value will release the current version')
+        string(name: 'RELEASE_TAG', defaultValue: 'NA', description: 'The release tag for this version. An NA value will result in replication-RELEASE_VERSION')
+        string(name: 'NEXT_VERSION', defaultValue: 'NA', description: 'The next development version. An NA value will increment the patch version')
     }
     options {
-        buildDiscarder(logRotator(numToKeepStr:'25'))
+        buildDiscarder(logRotator(numToKeepStr: '25'))
         disableConcurrentBuilds()
         timestamps()
     }
@@ -30,7 +30,7 @@ pipeline {
         COVERAGE_EXCLUSIONS = '**/test/**/*,**/itests/**/*,**/*Test*,**/sdk/**/*,**/*.js,**/node_modules/**/*,**/jaxb/**/*,**/wsdl/**/*,**/nces/sws/**/*,**/*.adoc,**/*.txt,**/*.xml'
         DISABLE_DOWNLOAD_PROGRESS_OPTS = '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn '
     }
-    stages {  
+    stages {
         // The incremental build will be triggered only for PRs. It will build the differences between the PR and the target branch
         stage('Incremental Build') {
             when {
@@ -40,7 +40,7 @@ pipeline {
                 }
             }
             parallel {
-                stage ('Linux') {
+                stage('Linux') {
                     steps {
                         // TODO: Maven downgraded to work around a linux build issue. Falling back to system java to work around a linux build issue. re-investigate upgrading later
                         withMaven(maven: 'Maven 3.5.3', jdk: 'jdk8-latest', globalMavenSettingsConfig: 'default-global-settings', mavenSettingsConfig: 'codice-maven-settings', mavenOpts: '${LINUX_MVN_RANDOM}') {
@@ -64,21 +64,21 @@ pipeline {
         stage('Full Build') {
             when { expression { env.CHANGE_ID == null } }
             parallel {
-                stage ('Linux') {
+                stage('Linux') {
                     steps {
                         // TODO: Maven downgraded to work around a linux build issue. Falling back to system java to work around a linux build issue. re-investigate upgrading later
                         withMaven(maven: 'Maven 3.5.3', jdk: 'jdk8-latest', globalMavenSettingsConfig: 'default-global-settings', mavenSettingsConfig: 'codice-maven-settings', mavenOpts: '${LINUX_MVN_RANDOM}') {
                             script {
-                                if(params.RELEASE == true) {
+                                if (params.RELEASE == true) {
                                     sh "mvn -B -Dtag=${env.RELEASE_TAG} -DreleaseVersion=${env.RELEASE_VERSION} -DdevelopmentVersion=${env.NEXT_VERSION} release:prepare"
-                                    env.RELEASE_COMMIT =  sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+                                    env.RELEASE_COMMIT = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                                 } else {
                                     sh 'mvn clean install -B $DISABLE_DOWNLOAD_PROGRESS_OPTS'
                                 }
                             }
                         }
                     }
-                }         
+                }
             }
         }
         stage('Quality Analysis') {
@@ -86,13 +86,14 @@ pipeline {
                 // Sonar stage only runs against master
                 //Need to check SonarQube Token
                 stage ('SonarCloud') {
+                    steps {
                         //Run SonarCloud on all branches as it will take care of removing analysis after 30 days
                         withMaven(maven: 'M35', jdk: 'jdk8-latest', globalMavenSettingsConfig: 'default-global-settings', mavenSettingsConfig: 'codice-maven-settings', mavenOpts: '${LINUX_MVN_RANDOM}') {
                             withCredentials([string(credentialsId: 'SonarQubeGithubToken', variable: 'SONARQUBE_GITHUB_TOKEN'), string(credentialsId: 'cxbot-sonarcloud', variable: 'SONAR_TOKEN')]) {
                                 script {
                                     sh 'mvn -q -B -Dcheckstyle.skip=true org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN  -Dsonar.organization=shaundmorris -Dsonar.projectKey=replication:replication -Dsonar.exclusions=${COVERAGE_EXCLUSIONS} $DISABLE_DOWNLOAD_PROGRESS_OPTS'
 
-                                 }
+                                }
                             }
                         }
                     }
@@ -100,3 +101,4 @@ pipeline {
             }
         } 
     }
+}
