@@ -84,7 +84,6 @@ pipeline {
         stage('Quality Analysis') {
             parallel {
                 // Sonar stage only runs against master
-                //Need to check SonarQube Token
 //                stage ('SonarCloud') {
 //                    steps {
 //                        //Run SonarCloud on all branches as it will take care of removing analysis after 30 days
